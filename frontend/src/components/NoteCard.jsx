@@ -41,7 +41,7 @@ const NoteCard = ({ note, onDeleteClick }) => {
             </svg>
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); console.log('delete', note._id) }}
+            onClick={(e) => { e.stopPropagation(); onDeleteClick(note._id) }}
             className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
           >
             <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

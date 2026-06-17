@@ -5,6 +5,7 @@ import NoteCard from '../components/NoteCard'
 import SearchBar from '../components/SearchBar'
 import useDebounce from '../hooks/useDebounce'
 import EmptyState from '../components/EmptyState'
+import DeleteConfirmModal from '../components/DeleteConfirmModal'
 
 const SkeletonCard = () => (
   <div className="bg-white rounded-xl border border-gray-100 p-5 animate-pulse">
@@ -28,6 +29,8 @@ export const NotesListPage = () => {
   const [error, setError] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const debouncedSearch = useDebounce(searchQuery, 350)
+  const [pendingDeleteId, setPendingDeleteId] = useState(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const fetchNotes = useCallback(async (search) => {
     try {
@@ -43,6 +46,20 @@ export const NotesListPage = () => {
   }, [])
 
   useEffect(() => { fetchNotes(debouncedSearch || undefined) }, [debouncedSearch, fetchNotes])
+
+  const handleConfirmDelete = async () => {
+  if (!pendingDeleteId) return
+  try {
+    setIsDeleting(true)
+    await notesApi.delete(pendingDeleteId)
+    setNotes((prev) => prev.filter((n) => n._id !== pendingDeleteId))
+    setPendingDeleteId(null)
+  } catch (err) {
+    setError(err.message || 'Failed to delete note')
+  } finally {
+    setIsDeleting(false)
+  }
+}
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -94,13 +111,19 @@ export const NotesListPage = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {notes.map((note) => (
-                  <NoteCard key={note._id} note={note} onDeleteClick={(id) => console.log('delete', id)} />
+                  <NoteCard key={note._id} note={note} onDeleteClick={setPendingDeleteId} />
                 ))}
               </div>
             )}
           </>
         )}
       </main>
+      <DeleteConfirmModal
+        isOpen={!!pendingDeleteId}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setPendingDeleteId(null)}
+        isDeleting={isDeleting}
+      />
     </div>
   )
 }
