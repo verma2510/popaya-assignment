@@ -59,7 +59,7 @@ const NoteForm = ({
           role="switch"
           aria-checked={form.isPinned}
           onClick={() => setForm((f) => ({ ...f, isPinned: !f.isPinned }))}
-          className={`relative w-10 h-5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 ${
+          className={`relative w-10 h-5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer ${
             form.isPinned ? 'bg-indigo-600' : 'bg-gray-200'
           }`}
         >
@@ -162,7 +162,7 @@ const NoteForm = ({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors cursor-pointer"
         >
           Cancel
         </button>
@@ -170,7 +170,7 @@ const NoteForm = ({
           type="button"
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+          className="flex-1 px-4 py-2.5 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-2 cursor-pointer"
         >
           {isSubmitting ? (
             <>

@@ -46,7 +46,7 @@ export const NoteFormPage = () => {
     }
   }
 
-  const handleCancel = () => navigate(isEditing ? `/notes/${id}` : '/')
+  const handleCancel = () => navigate('/')
 
   if (isLoadingNote) {
     return (
