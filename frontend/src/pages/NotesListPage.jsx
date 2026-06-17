@@ -4,6 +4,7 @@ import { notesApi } from '../api/notesApi'
 import NoteCard from '../components/NoteCard'
 import SearchBar from '../components/SearchBar'
 import useDebounce from '../hooks/useDebounce'
+import EmptyState from '../components/EmptyState'
 
 export const NotesListPage = () => {
   const navigate = useNavigate()
@@ -62,10 +63,8 @@ export const NotesListPage = () => {
           </div>
         )}
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
-          </div>
+        {notes.length === 0 ? (
+          <EmptyState isSearching={!!debouncedSearch} />
         ) : (
           <>
             <p className="text-xs text-gray-400 mb-4">
