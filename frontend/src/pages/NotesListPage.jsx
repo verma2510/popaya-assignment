@@ -31,13 +31,16 @@ export const NotesListPage = () => {
   const debouncedSearch = useDebounce(searchQuery, 350)
   const [pendingDeleteId, setPendingDeleteId] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [page, setPage] = useState(1)
+  const [paginationInfo, setPaginationInfo] = useState(null)
 
-  const fetchNotes = useCallback(async (search) => {
+  const fetchNotes = useCallback(async (search, pageNum) => {
     try {
       setIsLoading(true)
       setError(null)
-      const res = await notesApi.getAll(search || undefined)
+      const res = await notesApi.getAll(search || undefined, pageNum)
       setNotes(res.data.data)
+      setPaginationInfo(res.data.pagination)
     } catch (err) {
       setError(err.message || 'Failed to load notes')
     } finally {
@@ -45,7 +48,12 @@ export const NotesListPage = () => {
     }
   }, [])
 
-  useEffect(() => { fetchNotes(debouncedSearch || undefined) }, [debouncedSearch, fetchNotes])
+  useEffect(() => { fetchNotes(debouncedSearch || undefined, page) }, [debouncedSearch, page, fetchNotes])
+
+  const handleSearchChange = (val) => {
+    setSearchQuery(val)
+    setPage(1)
+  }
 
   const handleConfirmDelete = async () => {
   if (!pendingDeleteId) return
@@ -74,7 +82,7 @@ export const NotesListPage = () => {
             <h1 className="text-base font-bold text-gray-900">Notes</h1>
           </div>
           <div className="flex-1">
-            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+            <SearchBar value={searchQuery} onChange={handleSearchChange} />
           </div>
           <button
             onClick={() => navigate('/notes/create')}
@@ -102,18 +110,43 @@ export const NotesListPage = () => {
         ) : (
           <>
             <p className="text-xs text-gray-400 mb-4">
-              {debouncedSearch
-                ? `${notes.length} result${notes.length !== 1 ? 's' : ''} for "${debouncedSearch}"`
-                : `${notes.length} note${notes.length !== 1 ? 's' : ''}`}
+              {paginationInfo && paginationInfo.totalCount !== undefined
+                ? `${paginationInfo.totalCount} result${paginationInfo.totalCount !== 1 ? 's' : ''}` + (debouncedSearch ? ` for "${debouncedSearch}"` : '')
+                : debouncedSearch
+                  ? `${notes.length} result${notes.length !== 1 ? 's' : ''} for "${debouncedSearch}"`
+                  : `${notes.length} note${notes.length !== 1 ? 's' : ''}`}
             </p>
             {notes.length === 0 ? (
               <EmptyState isSearching={!!debouncedSearch} />
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {notes.map((note) => (
-                  <NoteCard key={note._id} note={note} onDeleteClick={setPendingDeleteId} />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {notes.map((note) => (
+                    <NoteCard key={note._id} note={note} onDeleteClick={setPendingDeleteId} />
+                  ))}
+                </div>
+                {paginationInfo && paginationInfo.totalPages > 1 && (
+                  <div className="flex items-center justify-between border-t border-gray-200 mt-8 pt-4">
+                    <button
+                      onClick={() => setPage(p => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-sm text-gray-500">
+                      Page <span className="font-medium text-gray-900">{paginationInfo.currentPage}</span> of <span className="font-medium text-gray-900">{paginationInfo.totalPages}</span>
+                    </span>
+                    <button
+                      onClick={() => setPage(p => Math.min(paginationInfo.totalPages, p + 1))}
+                      disabled={!paginationInfo.hasNextPage}
+                      className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

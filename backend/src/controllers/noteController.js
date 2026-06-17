@@ -4,7 +4,7 @@ const { validationResult } = require('express-validator');
 //  GET /api/notes?search=&page=&limit=
 const getNotes = async (req, res, next) => {
   try {
-    const { search } = req.query;
+    const { search, page = 1, limit = 9 } = req.query;
 
     let query = {};
 
@@ -14,12 +14,34 @@ const getNotes = async (req, res, next) => {
       query.$or = [{ title: regex }, { content: regex }];
     }
 
-    const notes = await Note.find(query)
-      .sort({ isPinned: -1, updatedAt: -1 }) // pinned first, then by last update
-      .select('title content tags isPinned createdAt updatedAt')
-      .lean();
+    const parsedPage = parseInt(page, 10) || 1;
+    const parsedLimit = parseInt(limit, 10) || 9;
+    const skip = (parsedPage - 1) * parsedLimit;
 
-    res.json({ success: true, count: notes.length, data: notes });
+    // Execute queries in parallel
+    const [notes, totalCount] = await Promise.all([
+      Note.find(query)
+        .sort({ isPinned: -1, updatedAt: -1 }) // pinned first, then by last update
+        .skip(skip)
+        .limit(parsedLimit)
+        .select('title content tags isPinned createdAt updatedAt')
+        .lean(),
+      Note.countDocuments(query)
+    ]);
+
+    const totalPages = Math.ceil(totalCount / parsedLimit);
+
+    res.json({ 
+      success: true, 
+      count: notes.length, 
+      data: notes,
+      pagination: {
+        currentPage: parsedPage,
+        totalPages,
+        totalCount,
+        hasNextPage: parsedPage < totalPages
+      }
+    });
   } catch (error) {
     next(error);
   }

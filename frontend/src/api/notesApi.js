@@ -17,8 +17,8 @@ api.interceptors.response.use(
 )
 
 export const notesApi = {
-  // Fetch all notes, optionally filtering by a search query
-  getAll: (search) => api.get('/notes', { params: search ? { search } : undefined }),
+  // Fetch all notes, optionally filtering by a search query and pagination
+  getAll: (search, page) => api.get('/notes', { params: { ...(search && { search }), ...(page && { page }) } }),
   getById: (id) => api.get(`/notes/${id}`),
   create: (data) => api.post('/notes', data),
   update: (id, data) => api.put(`/notes/${id}`, data),
