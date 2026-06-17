@@ -1,14 +1,23 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import NoteForm from '../components/NoteForm'
+import { notesApi } from '../api/notesApi'
 
 export const NoteFormPage = () => {
   const navigate = useNavigate()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState(null)
 
   const handleSubmit = async (data) => {
-    console.log('Form data:', data)
-    // API call
+    try {
+      setIsSubmitting(true)
+      setError(null)
+      const res = await notesApi.create(data)
+      navigate(`/notes/${res.data.data._id}`)
+    } catch (err) {
+      setError(err.message || 'Failed to create note')
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -25,6 +34,11 @@ export const NoteFormPage = () => {
         </div>
       </header>
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-6">
+        {error && (
+          <div className="mb-4 p-3.5 bg-red-50 border border-red-100 rounded-lg">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
           <NoteForm
             onSubmit={handleSubmit}
