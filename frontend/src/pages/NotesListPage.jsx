@@ -6,6 +6,21 @@ import SearchBar from '../components/SearchBar'
 import useDebounce from '../hooks/useDebounce'
 import EmptyState from '../components/EmptyState'
 
+const SkeletonCard = () => (
+  <div className="bg-white rounded-xl border border-gray-100 p-5 animate-pulse">
+    <div className="h-4 bg-gray-200 rounded-full w-2/3 mb-3" />
+    <div className="space-y-2 mb-4">
+      <div className="h-3 bg-gray-100 rounded-full w-full" />
+      <div className="h-3 bg-gray-100 rounded-full w-4/5" />
+      <div className="h-3 bg-gray-100 rounded-full w-3/5" />
+    </div>
+    <div className="flex justify-between">
+      <div className="h-2.5 bg-gray-100 rounded-full w-24" />
+      <div className="h-2.5 bg-gray-100 rounded-full w-24" />
+    </div>
+  </div>
+)
+
 export const NotesListPage = () => {
   const navigate = useNavigate()
   const [notes, setNotes] = useState([])
@@ -63,8 +78,10 @@ export const NotesListPage = () => {
           </div>
         )}
 
-        {notes.length === 0 ? (
-          <EmptyState isSearching={!!debouncedSearch} />
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+          </div>
         ) : (
           <>
             <p className="text-xs text-gray-400 mb-4">
@@ -72,11 +89,15 @@ export const NotesListPage = () => {
                 ? `${notes.length} result${notes.length !== 1 ? 's' : ''} for "${debouncedSearch}"`
                 : `${notes.length} note${notes.length !== 1 ? 's' : ''}`}
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {notes.map((note) => (
-                <NoteCard key={note._id} note={note} onDeleteClick={(id) => console.log('delete', id)} />
-              ))}
-            </div>
+            {notes.length === 0 ? (
+              <EmptyState isSearching={!!debouncedSearch} />
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {notes.map((note) => (
+                  <NoteCard key={note._id} note={note} onDeleteClick={(id) => console.log('delete', id)} />
+                ))}
+              </div>
+            )}
           </>
         )}
       </main>
