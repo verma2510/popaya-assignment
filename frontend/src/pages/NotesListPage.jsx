@@ -2,19 +2,23 @@ import React, { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { notesApi } from '../api/notesApi'
 import NoteCard from '../components/NoteCard'
+import SearchBar from '../components/SearchBar'
+import useDebounce from '../hooks/useDebounce'
 
 export const NotesListPage = () => {
   const navigate = useNavigate()
   const [notes, setNotes] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const debouncedSearch = useDebounce(searchQuery, 350)
 
-  const fetchNotes = useCallback(async () => {
+  const fetchNotes = useCallback(async (search) => {
     try {
       setIsLoading(true)
       setError(null)
-      const res = await notesApi.getAll()
-      setNotes(res.data?.data || [])
+      const res = await notesApi.getAll(search || undefined)
+      setNotes(res.data.data)
     } catch (err) {
       setError(err.message || 'Failed to load notes')
     } finally {
@@ -22,7 +26,7 @@ export const NotesListPage = () => {
     }
   }, [])
 
-  useEffect(() => { fetchNotes() }, [fetchNotes])
+  useEffect(() => { fetchNotes(debouncedSearch || undefined) }, [debouncedSearch, fetchNotes])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -36,7 +40,9 @@ export const NotesListPage = () => {
             </div>
             <h1 className="text-base font-bold text-gray-900">Notes</h1>
           </div>
-          <div className="flex-1" />
+          <div className="flex-1">
+            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          </div>
           <button
             onClick={() => navigate('/notes/create')}
             className="flex cursor-pointer items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
@@ -62,7 +68,11 @@ export const NotesListPage = () => {
           </div>
         ) : (
           <>
-            <p className="text-xs text-gray-400 mb-4">{notes.length} notes</p>
+            <p className="text-xs text-gray-400 mb-4">
+              {debouncedSearch
+                ? `${notes.length} result${notes.length !== 1 ? 's' : ''} for "${debouncedSearch}"`
+                : `${notes.length} note${notes.length !== 1 ? 's' : ''}`}
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {notes.map((note) => (
                 <NoteCard key={note._id} note={note} onDeleteClick={(id) => console.log('delete', id)} />
