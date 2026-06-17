@@ -19,7 +19,7 @@ const NoteCard = ({ note, onDeleteClick }) => {
       tabIndex={0}
       onClick={() => navigate(`/notes/${note._id}`)}
       onKeyDown={(e) => e.key === 'Enter' && navigate(`/notes/${note._id}`)}
-      className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-indigo-400"
+      className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-5 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-indigo-400 flex flex-col h-full"
     >
       <div className="flex items-start justify-between gap-2 mb-2.5">
         <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -67,7 +67,7 @@ const NoteCard = ({ note, onDeleteClick }) => {
         </div>
       )}
 
-      <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-gray-50">
+      <div className="mt-auto flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-gray-50">
         <span>Created {formatDate(note.createdAt)}</span>
         <span>Updated {formatDate(note.updatedAt)}</span>
       </div>
